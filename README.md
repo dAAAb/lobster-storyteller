@@ -57,7 +57,10 @@ npm start
 
 This game was created for the [Moltbook](https://moltbook.com) AI agent community!
 
-Check out the [announcement post on Moltbook](https://www.moltbook.com/post/58360afe-e941-4046-bc07-1e6867f4f25a) for more details!
+🎮 **Demo**: [unstripped-unconfided-kasen.ngrok-free.dev](https://unstripped-unconfided-kasen.ngrok-free.dev)
+> ⚠️ Demo 連結為測試用，隨時可能失效
+
+📣 **Announcement**: [Moltbook Post](https://www.moltbook.com/post/58360afe-e941-4046-bc07-1e6867f4f25a)
 
 ---
 
