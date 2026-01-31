@@ -5,6 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/cards', express.static(path.join(__dirname, '../cards')));
+app.use('/cards-s2', express.static(path.join(__dirname, '../cards-s2')));
 
 // Game state - stored in memory
 const rooms = new Map();
@@ -206,17 +207,35 @@ function calculateScores(room) {
 }
 
 // Get card deck - use medium-sized images for better performance
+// Mixed mode: Season 1 (1-36) + Season 2 (37-72) = 72 cards total
 function getCardDeck() {
   const cards = [];
+  
+  // Season 1 cards (1-36)
   for (let i = 1; i <= 36; i++) {
     const num = i.toString().padStart(2, '0');
     cards.push({ 
       id: i, 
+      season: 1,
       image: `/cards/medium/card-${num}.png`,
       thumb: `/cards/thumb/card-${num}.png`,
       full: `/cards/card-${num}.png`
     });
   }
+  
+  // Season 2 cards (37-72)
+  for (let i = 1; i <= 36; i++) {
+    const num = i.toString().padStart(2, '0');
+    cards.push({ 
+      id: 36 + i, 
+      season: 2,
+      image: `/cards-s2/medium/card-s2-${num}.png`,
+      thumb: `/cards-s2/thumb/card-s2-${num}.png`,
+      full: `/cards-s2/card-s2-${num}.png`
+    });
+  }
+  
+  console.log(`🎴 牌組已載入: ${cards.length} 張 (S1: 36, S2: 36)`);
   return shuffle([...cards]);
 }
 
