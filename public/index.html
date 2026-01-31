@@ -965,9 +965,24 @@
       }
     };
     
-    // Disband room
+    // Disband room - with double-click confirmation
+    let disbandClickTime = 0;
     document.getElementById('disband-btn').onclick = async () => {
-      if (!confirm('確定要解散房間嗎？所有玩家將被踢出。')) return;
+      const now = Date.now();
+      if (now - disbandClickTime > 3000) {
+        // First click - show warning
+        disbandClickTime = now;
+        document.getElementById('disband-btn').textContent = '⚠️ 再按一次確認解散';
+        document.getElementById('disband-btn').style.background = 'rgba(255,50,50,0.4)';
+        setTimeout(() => {
+          document.getElementById('disband-btn').textContent = '解散房間';
+          document.getElementById('disband-btn').style.background = 'rgba(255,107,107,0.2)';
+          disbandClickTime = 0;
+        }, 3000);
+        return;
+      }
+      
+      // Second click within 3 seconds - actually disband
       try {
         await api(`/api/room/${roomCode}/disband`, 'POST', { playerId });
         clearSession();
