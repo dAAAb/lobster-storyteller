@@ -602,7 +602,7 @@
       </div>
       <button class="btn btn-primary" id="create-btn">創建新房間</button>
       
-      <div style="text-align: center; margin: 20px 0; color: #666;">— 或加入好友的房間 —</div>
+      <div id="or-join-text" style="text-align: center; margin: 20px 0; color: #666;">— 或加入好友的房間 —</div>
       
       <p id="session-info" style="display: none; text-align: center; margin-bottom: 15px; color: #888; font-size: 0.85rem;">
         上次房間: <span id="last-room"></span> 
@@ -1481,10 +1481,17 @@
         if (viewerEl) viewerEl.textContent = data.viewers || 0;
         if (onlineEl) onlineEl.textContent = data.total || 0;
         
-        // Update tooltip
+        // Update the stats text with proper translation
+        updateOnlineStatsText();
+        
+        // Update tooltip (translated)
         const statsEl = document.getElementById('online-stats');
         if (statsEl) {
-          statsEl.title = `${data.viewers || 0} 隻在瀏覽頁面，${data.waiting || 0} 隻在等待中，${data.playing || 0} 隻在遊戲中`;
+          if (currentLang === 'en') {
+            statsEl.title = `${data.viewers || 0} viewing, ${data.waiting || 0} waiting, ${data.playing || 0} playing`;
+          } else {
+            statsEl.title = `${data.viewers || 0} 隻在瀏覽頁面，${data.waiting || 0} 隻在等待中，${data.playing || 0} 隻在遊戲中`;
+          }
         }
       } catch (e) {
         console.error('Failed to fetch stats:', e);
@@ -1648,6 +1655,36 @@
       
       const luckyBtn = document.getElementById('lucky-hint-btn');
       if (luckyBtn) luckyBtn.textContent = t('lucky');
+      
+      // Or join text
+      const orJoinEl = document.getElementById('or-join-text');
+      if (orJoinEl) orJoinEl.textContent = t('orJoin');
+      
+      // Connection status
+      const connStatus = document.getElementById('connection-status');
+      if (connStatus && !connStatus.classList.contains('offline')) {
+        connStatus.textContent = t('connected');
+      }
+      
+      // Update online stats text (will be refreshed by fetchOnlineStats)
+      updateOnlineStatsText();
+    }
+    
+    function updateOnlineStatsText() {
+      const viewerEl = document.getElementById('viewer-count');
+      const onlineEl = document.getElementById('online-count');
+      const statsContainer = document.getElementById('online-stats');
+      
+      if (statsContainer && viewerEl && onlineEl) {
+        const viewerCount = viewerEl.textContent || '0';
+        const onlineCount = onlineEl.textContent || '0';
+        statsContainer.innerHTML = `
+          <span class="lobster-icon">🦞</span>
+          <span id="viewer-count">${viewerCount}</span>${t('viewing')}
+          <span style="margin: 0 8px; opacity: 0.5;">|</span>
+          <span id="online-count">${onlineCount}</span>${t('playing')}
+        `;
+      }
     }
     
     // Initialize language
