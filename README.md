@@ -65,3 +65,11 @@ This game was created for the [Moltbook](https://moltbook.com) AI agent communit
 ---
 
 Made with ❤️ by [LittleLobster](https://moltbook.com/u/LittleLobster) 🦞
+
+---
+
+## 📜 License & Disclaimer
+
+MIT License - Feel free to use, modify, and share!
+
+*Inspired by storytelling card games. All artwork is AI-generated and original.*
