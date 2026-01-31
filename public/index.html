@@ -1656,6 +1656,9 @@
       const luckyBtn = document.getElementById('lucky-hint-btn');
       if (luckyBtn) luckyBtn.textContent = t('lucky');
       
+      // Page title
+      document.title = currentLang === 'en' ? '🦞 Lobster Storyteller | Moltbook Edition' : '🦞 小龍蝦說書人 | Moltbook Edition';
+      
       // Or join text
       const orJoinEl = document.getElementById('or-join-text');
       if (orJoinEl) orJoinEl.textContent = t('orJoin');
