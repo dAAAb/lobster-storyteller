@@ -69,6 +69,49 @@
       font-size: 1.1rem;
     }
     
+    /* Player Type Selector */
+    .player-type-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    
+    .type-option {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .type-option:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .type-option.selected {
+      border-color: #ff6b6b;
+      background: rgba(255,107,107,0.15);
+    }
+    
+    .type-emoji {
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+    }
+    
+    .type-label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .type-option.selected .type-label {
+      color: #fff;
+    }
+    
     .screen { display: none; }
     .screen.active { display: block; }
     
@@ -448,7 +491,17 @@
         <span id="online-count">-</span> 隻在遊戲中
       </div>
       
-      <input type="text" id="player-name" placeholder="房主暱稱" maxlength="12">
+      <input type="text" id="player-name" placeholder="你的暱稱" maxlength="12">
+      <div class="player-type-selector">
+        <label class="type-option selected" data-type="human">
+          <span class="type-emoji">👤</span>
+          <span class="type-label">人類</span>
+        </label>
+        <label class="type-option" data-type="lobster">
+          <span class="type-emoji">🦞</span>
+          <span class="type-label">小龍蝦</span>
+        </label>
+      </div>
       <button class="btn btn-primary" id="create-btn">創建新房間</button>
       
       <div style="text-align: center; margin: 20px 0; color: #666;">— 或加入好友的房間 —</div>
@@ -463,6 +516,16 @@
       
       <div id="join-input-area" style="display: none; margin-top: 12px;">
         <input type="text" id="join-nickname" placeholder="輸入你的暱稱" maxlength="12">
+        <div class="player-type-selector" id="join-type-selector">
+          <label class="type-option selected" data-type="human">
+            <span class="type-emoji">👤</span>
+            <span class="type-label">人類</span>
+          </label>
+          <label class="type-option" data-type="lobster">
+            <span class="type-emoji">🦞</span>
+            <span class="type-label">小龍蝦</span>
+          </label>
+        </div>
         <input type="text" id="room-code-input" placeholder="輸入房間代碼" maxlength="4" style="text-transform: uppercase; text-align: center; letter-spacing: 8px; font-size: 1.5rem;">
         <button class="btn btn-primary" id="confirm-join-btn">確認加入</button>
       </div>
@@ -563,6 +626,17 @@
     let pollInterval = null;
     let amStoryteller = false;
     
+    // Player type selection
+    let selectedPlayerType = 'human'; // 'human' or 'lobster'
+    
+    document.querySelectorAll('.type-option').forEach(option => {
+      option.onclick = () => {
+        document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        selectedPlayerType = option.dataset.type;
+      };
+    });
+    
     // Elements
     const homeScreen = document.getElementById('home-screen');
     const lobbyScreen = document.getElementById('lobby-screen');
@@ -636,7 +710,7 @@
       if (!name) return showMessage('home-message', '請輸入暱稱');
       
       try {
-        const data = await api('/api/room/create', 'POST', { playerName: name });
+        const data = await api('/api/room/create', 'POST', { playerName: name, playerType: selectedPlayerType });
         playerId = data.playerId;
         roomCode = data.roomCode;
         myName = name;
@@ -651,6 +725,9 @@
       }
     };
     
+    // Join player type
+    let joinPlayerType = 'human';
+    
     // Join room - show input area
     document.getElementById('join-btn').onclick = () => {
       const joinArea = document.getElementById('join-input-area');
@@ -663,6 +740,15 @@
         joinBtn.classList.add('btn-primary');
         joinBtn.style.background = 'rgba(255,107,107,0.3)';
         joinBtn.style.borderColor = '#ff6b6b';
+        
+        // Setup join type selector
+        document.querySelectorAll('#join-type-selector .type-option').forEach(option => {
+          option.onclick = () => {
+            document.querySelectorAll('#join-type-selector .type-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            joinPlayerType = option.dataset.type;
+          };
+        });
         
         // Auto-fill room code from URL if present
         const urlCode = urlParams.get('room');
@@ -697,7 +783,7 @@
       }
       
       try {
-        const data = await api('/api/room/join', 'POST', { roomCode: code, playerName: name });
+        const data = await api('/api/room/join', 'POST', { roomCode: code, playerName: name, playerType: joinPlayerType });
         playerId = data.playerId;
         roomCode = data.roomCode;
         myName = name;

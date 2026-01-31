@@ -250,18 +250,30 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
+// Get player type emoji
+function getTypeEmoji(type) {
+  switch(type) {
+    case 'lobster': return '🦞';
+    case 'bot': return '🤖';
+    default: return '👤';
+  }
+}
+
 // Create room
 app.post('/api/room/create', (req, res) => {
-  const { playerName } = req.body;
+  const { playerName, playerType } = req.body;
   if (!playerName) return res.status(400).json({ error: '請輸入暱稱' });
 
   const roomCode = generateRoomCode();
   const playerId = generatePlayerId();
   const deck = getCardDeck();
+  const typeEmoji = getTypeEmoji(playerType);
 
   const player = {
     id: playerId,
     name: playerName,
+    displayName: `${playerName}(${typeEmoji})`,
+    type: playerType || 'human',
     hand: deck.splice(0, 6),
     score: 0,
     lastSeen: Date.now()
@@ -296,7 +308,7 @@ app.post('/api/room/create', (req, res) => {
 
 // Join room
 app.post('/api/room/join', (req, res) => {
-  const { roomCode, playerName } = req.body;
+  const { roomCode, playerName, playerType } = req.body;
   if (!playerName) return res.status(400).json({ error: '請輸入暱稱' });
   if (!roomCode) return res.status(400).json({ error: '請輸入房間代碼' });
 
@@ -306,9 +318,12 @@ app.post('/api/room/join', (req, res) => {
   if (room.players.length >= 8) return res.status(400).json({ error: '房間已滿' });
 
   const playerId = generatePlayerId();
+  const typeEmoji = getTypeEmoji(playerType);
   const player = {
     id: playerId,
     name: playerName,
+    displayName: `${playerName}(${typeEmoji})`,
+    type: playerType || 'human',
     hand: room.deck.splice(0, 6),
     score: 0,
     lastSeen: Date.now()
@@ -323,7 +338,7 @@ app.post('/api/room/join', (req, res) => {
     roomCode: room.code,
     playerId,
     player: { id: playerId, name: playerName, hand: player.hand, score: 0 },
-    players: room.players.map(p => ({ id: p.id, name: p.name, score: p.score })),
+    players: room.players.map(p => ({ id: p.id, name: p.displayName || p.name, score: p.score })),
     isHost: false
   });
 });
@@ -346,7 +361,7 @@ app.post('/api/room/rejoin', (req, res) => {
     roomCode: room.code,
     playerId,
     player: { id: player.id, name: player.name, hand: player.hand, score: player.score },
-    players: room.players.map(p => ({ id: p.id, name: p.name, score: p.score })),
+    players: room.players.map(p => ({ id: p.id, name: p.displayName || p.name, score: p.score })),
     isHost: room.host === playerId,
     phase: room.phase,
     round: room.round,
@@ -381,9 +396,9 @@ app.get('/api/room/:roomCode/state', (req, res) => {
     roomCode: room.code,
     phase: room.phase,
     round: room.round,
-    players: room.players.map(p => ({ id: p.id, name: p.name, score: p.score })),
+    players: room.players.map(p => ({ id: p.id, name: p.displayName || p.name, score: p.score })),
     storytellerId: storyteller?.id,
-    storytellerName: storyteller?.name,
+    storytellerName: storyteller?.displayName || storyteller?.name,
     story: room.story,
     isHost: room.host === playerId,
     hand: player?.hand || [],
@@ -394,7 +409,7 @@ app.get('/api/room/:roomCode/state', (req, res) => {
           displayNumber: s.displayNumber,
           image: s.card.image,
           playerId: room.phase === 'reveal' ? s.playerId : undefined,
-          playerName: room.phase === 'reveal' ? room.players.find(p => p.id === s.playerId)?.name : undefined,
+          playerName: room.phase === 'reveal' ? (room.players.find(p => p.id === s.playerId)?.displayName || room.players.find(p => p.id === s.playerId)?.name) : undefined,
           isStoryteller: room.phase === 'reveal' ? s.playerId === storyteller?.id : undefined,
           votes: room.phase === 'reveal' 
             ? Object.entries(room.votes).filter(([_, v]) => v === s.displayNumber).map(([oderId]) => room.players.find(p => p.id === oderId)?.name)
@@ -404,9 +419,10 @@ app.get('/api/room/:roomCode/state', (req, res) => {
     // Player status for game UI
     playerStatus: room.players.map(p => ({
       id: p.id,
-      name: p.name,
+      name: p.displayName || p.name,
       score: p.score,
       isBot: p.isBot,
+      type: p.type,
       isStoryteller: p.id === storyteller?.id,
       hasSubmitted: room.submittedCards.some(s => s.playerId === p.id),
       hasVoted: !!room.votes[p.id]
@@ -555,7 +571,9 @@ app.post('/api/room/:roomCode/add-bot', (req, res) => {
   const botId = 'bot_' + Math.random().toString(36).substr(2, 9);
   const bot = {
     id: botId,
-    name: `${botName}(🤖)`,
+    name: botName,
+    displayName: `${botName}(🤖)`,
+    type: 'bot',
     hand: room.deck.splice(0, 6),
     score: 0,
     isBot: true,
@@ -570,7 +588,7 @@ app.post('/api/room/:roomCode/add-bot', (req, res) => {
   res.json({ 
     success: true, 
     bot: { id: bot.id, name: bot.name, score: 0 },
-    players: room.players.map(p => ({ id: p.id, name: p.name, score: p.score, isBot: p.isBot }))
+    players: room.players.map(p => ({ id: p.id, name: p.displayName || p.name, score: p.score, isBot: p.isBot }))
   });
 });
 
