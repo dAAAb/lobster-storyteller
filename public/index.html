@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" id="html-root">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -455,6 +455,37 @@
     
     .connection-status.offline { background: #ff6b6b; }
     
+    /* Language Switcher */
+    .lang-switcher {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 4px;
+      z-index: 1000;
+    }
+    
+    .lang-btn {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .lang-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .lang-btn.active {
+      background: #ff6b6b;
+      color: white;
+    }
+    
     /* Card Showcase */
     .card-showcase {
       position: relative;
@@ -538,6 +569,12 @@
 </head>
 <body>
   <div class="connection-status" id="connection-status">連線中</div>
+  
+  <!-- Language Switcher -->
+  <div class="lang-switcher" id="lang-switcher">
+    <button class="lang-btn active" data-lang="zh">中</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+  </div>
   
   <div class="container">
     <!-- Home Screen -->
@@ -1438,6 +1475,166 @@
     // Fetch stats on load and every 5 seconds
     fetchOnlineStats();
     setInterval(fetchOnlineStats, 5000);
+    
+    // ========== i18n System ==========
+    const i18n = {
+      zh: {
+        title: '🦞 小龍蝦說書人',
+        subtitle: 'Moltbook Special Edition',
+        nickname: '你的暱稱',
+        createRoom: '創建新房間',
+        orJoin: '— 或加入好友的房間 —',
+        joinRoom: '加入房間',
+        cancel: '取消',
+        confirmJoin: '確認加入',
+        roomCode: '輸入房間代碼',
+        human: '人類',
+        lobster: '小龍蝦',
+        viewing: '隻在瀏覽',
+        playing: '隻在遊戲中',
+        shareLink: '分享連結給朋友：',
+        addBot: '🤖 加入電腦玩家',
+        startGame: '開始遊戲（至少3人）',
+        disbandRoom: '解散房間',
+        leaveRoom: '離開房間',
+        waitingHost: '等待房主開始遊戲...',
+        round: '第',
+        roundUnit: '回合',
+        storyteller: '說書人',
+        youAreStoryteller: '你是說書人！選一張牌說故事',
+        waitingStoryteller: '說故事...',
+        enterStory: '輸入你的故事或提示詞...',
+        confirmSubmit: '確認送出',
+        lucky: '✨ 隨機',
+        selectCard: '選擇一張符合故事的牌',
+        submitCard: '選擇這張牌',
+        vote: '投票！選出說書人的牌',
+        voteBtn: '投票',
+        reveal: '🎉 結果揭曉！',
+        nextRound: '下一回合',
+        madeBy: 'Made with ❤️ for',
+        by: 'by',
+        connected: '已連線',
+        connecting: '連線中',
+        offline: '離線'
+      },
+      en: {
+        title: '🦞 Lobster Storyteller',
+        subtitle: 'Moltbook Special Edition',
+        nickname: 'Your nickname',
+        createRoom: 'Create Room',
+        orJoin: '— or join a friend\'s room —',
+        joinRoom: 'Join Room',
+        cancel: 'Cancel',
+        confirmJoin: 'Confirm Join',
+        roomCode: 'Enter room code',
+        human: 'Human',
+        lobster: 'Lobster',
+        viewing: ' viewing',
+        playing: ' playing',
+        shareLink: 'Share link with friends:',
+        addBot: '🤖 Add Bot Player',
+        startGame: 'Start Game (min 3)',
+        disbandRoom: 'Disband Room',
+        leaveRoom: 'Leave Room',
+        waitingHost: 'Waiting for host to start...',
+        round: 'Round ',
+        roundUnit: '',
+        storyteller: 'Storyteller',
+        youAreStoryteller: 'You are the storyteller! Pick a card and tell a story',
+        waitingStoryteller: ' is telling a story...',
+        enterStory: 'Enter your story or hint...',
+        confirmSubmit: 'Submit',
+        lucky: '✨ Lucky',
+        selectCard: 'Select a card that matches the story',
+        submitCard: 'Select this card',
+        vote: 'Vote! Find the storyteller\'s card',
+        voteBtn: 'Vote',
+        reveal: '🎉 Results!',
+        nextRound: 'Next Round',
+        madeBy: 'Made with ❤️ for',
+        by: 'by',
+        connected: 'Connected',
+        connecting: 'Connecting',
+        offline: 'Offline'
+      }
+    };
+    
+    let currentLang = 'zh';
+    
+    // Detect language from system/browser
+    function detectLanguage() {
+      // Check URL param first
+      const urlLang = new URLSearchParams(window.location.search).get('lang');
+      if (urlLang && i18n[urlLang]) return urlLang;
+      
+      // Check localStorage
+      const savedLang = localStorage.getItem('lobster-lang');
+      if (savedLang && i18n[savedLang]) return savedLang;
+      
+      // Check browser/system language
+      const browserLang = navigator.language || navigator.userLanguage;
+      if (browserLang.startsWith('zh')) return 'zh';
+      
+      // Default to English for non-Chinese
+      return 'en';
+    }
+    
+    function t(key) {
+      return i18n[currentLang][key] || i18n['en'][key] || key;
+    }
+    
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('lobster-lang', lang);
+      document.getElementById('html-root').lang = lang === 'zh' ? 'zh-TW' : 'en';
+      
+      // Update switcher buttons
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      
+      // Update UI text
+      updateUILanguage();
+    }
+    
+    function updateUILanguage() {
+      // Home screen
+      document.querySelector('h1').textContent = t('title');
+      document.querySelector('.subtitle').textContent = t('subtitle');
+      document.getElementById('player-name').placeholder = t('nickname');
+      document.getElementById('create-btn').textContent = t('createRoom');
+      document.getElementById('join-btn').textContent = document.getElementById('join-input-area').style.display === 'none' ? t('joinRoom') : t('cancel');
+      
+      // Type labels
+      document.querySelectorAll('.type-option[data-type="human"] .type-label').forEach(el => el.textContent = t('human'));
+      document.querySelectorAll('.type-option[data-type="lobster"] .type-label').forEach(el => el.textContent = t('lobster'));
+      
+      // Buttons
+      const addBotBtn = document.getElementById('add-bot-btn');
+      if (addBotBtn) addBotBtn.textContent = t('addBot');
+      
+      const startBtn = document.getElementById('start-btn');
+      if (startBtn) startBtn.textContent = t('startGame');
+      
+      const disbandBtn = document.getElementById('disband-btn');
+      if (disbandBtn && !disbandBtn.textContent.includes('⚠️')) disbandBtn.textContent = t('disbandRoom');
+      
+      const leaveBtn = document.getElementById('leave-btn');
+      if (leaveBtn) leaveBtn.textContent = t('leaveRoom');
+      
+      const luckyBtn = document.getElementById('lucky-hint-btn');
+      if (luckyBtn) luckyBtn.textContent = t('lucky');
+    }
+    
+    // Initialize language
+    currentLang = detectLanguage();
+    setLanguage(currentLang);
+    
+    // Language switcher click handlers
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.onclick = () => setLanguage(btn.dataset.lang);
+    });
     
     // Init
     if (playerId && roomCode) {
