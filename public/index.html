@@ -112,6 +112,67 @@
       color: #fff;
     }
     
+    /* Story Hints */
+    .story-hints-container {
+      display: flex;
+      align-items: center;
+      margin: 10px 0 15px;
+      gap: 8px;
+    }
+    
+    .story-hints-scroll {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .story-hints-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .story-hint-pill {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      color: rgba(255,255,255,0.8);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    
+    .story-hint-pill:hover {
+      background: rgba(255,107,107,0.2);
+      border-color: #ff6b6b;
+      color: #fff;
+    }
+    
+    .story-hint-lucky {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+      border: none;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+      z-index: 2;
+    }
+    
+    .story-hint-lucky:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+    }
+    
     .screen { display: none; }
     .screen.active { display: block; }
     
@@ -580,6 +641,13 @@
       <div id="storytelling-input" style="display: none;">
         <p style="text-align: center; margin-bottom: 15px;">選一張牌，說一個故事</p>
         <textarea id="story-input" placeholder="輸入你的故事或提示詞..." rows="2"></textarea>
+        
+        <!-- Story hint suggestions -->
+        <div class="story-hints-container">
+          <div class="story-hints-scroll" id="story-hints"></div>
+          <button class="story-hint-lucky" id="lucky-hint-btn">✨ 隨機</button>
+        </div>
+        
         <button class="btn btn-primary" id="submit-story-btn" disabled>確認送出</button>
       </div>
       
@@ -904,6 +972,7 @@
           document.getElementById('storytelling-input').style.display = 'block';
           document.getElementById('hand-area').style.display = 'block';
           renderHand();
+          renderStoryHints(); // Generate fresh hints
         } else {
           document.getElementById('phase-indicator').textContent = '等待 ' + data.storytellerName + ' 說故事...';
         }
@@ -1211,6 +1280,59 @@
         '<div class="score-item ' + (p.score === maxScore && maxScore > 0 ? 'winner' : '') + '"><span>' + p.name + (p.id === playerId ? ' (你)' : '') + '</span><span>' + p.score + ' 分</span></div>'
       ).join('');
     }
+    
+    // Story hints pool
+    const storyHintsPool = [
+      // 情感
+      '思念', '孤獨', '希望', '恐懼', '喜悅', '悲傷', '憤怒', '平靜', '驚喜', '失落',
+      // 自然
+      '月光', '星空', '大海', '森林', '沙漠', '雪山', '彩虹', '暴風雨', '日出', '黃昏',
+      // 奇幻
+      '魔法', '夢境', '秘密', '寶藏', '迷宮', '時間旅行', '隱形', '飛翔', '變身', '許願',
+      // 生活
+      '童年', '回憶', '告別', '重逢', '冒險', '等待', '選擇', '迷路', '歸家', '啟程',
+      // 抽象
+      '自由', '命運', '勇氣', '謊言', '真相', '永恆', '瞬間', '邊界', '無限', '虛空',
+      // 關係
+      '朋友', '陌生人', '影子', '鏡子', '守護', '背叛', '信任', '承諾', '犧牲', '傳承'
+    ];
+    
+    // Generate random hints
+    function generateStoryHints() {
+      const hints = [];
+      const pool = [...storyHintsPool];
+      for (let i = 0; i < 6; i++) {
+        const idx = Math.floor(Math.random() * pool.length);
+        hints.push(pool.splice(idx, 1)[0]);
+      }
+      return hints;
+    }
+    
+    // Render story hints
+    function renderStoryHints() {
+      const container = document.getElementById('story-hints');
+      const hints = generateStoryHints();
+      container.innerHTML = hints.map(h => 
+        `<span class="story-hint-pill" data-hint="${h}">${h}</span>`
+      ).join('');
+      
+      // Add click handlers
+      container.querySelectorAll('.story-hint-pill').forEach(pill => {
+        pill.onclick = () => {
+          document.getElementById('story-input').value = pill.dataset.hint;
+          document.getElementById('story-input').dispatchEvent(new Event('input'));
+        };
+      });
+    }
+    
+    // Lucky random hint
+    document.getElementById('lucky-hint-btn').onclick = () => {
+      const randomHint = storyHintsPool[Math.floor(Math.random() * storyHintsPool.length)];
+      document.getElementById('story-input').value = randomHint;
+      document.getElementById('story-input').dispatchEvent(new Event('input'));
+      // Refresh hints
+      renderStoryHints();
+    };
     
     // Story input change
     document.getElementById('story-input').oninput = () => {
