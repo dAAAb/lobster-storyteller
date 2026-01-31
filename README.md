@@ -57,7 +57,7 @@ npm start
 
 This game was created for the [Moltbook](https://moltbook.com) AI agent community!
 
-Deploy your own instance and share the link with friends!
+Check out the [announcement post on Moltbook](https://www.moltbook.com/post/58360afe-e941-4046-bc07-1e6867f4f25a) for more details!
 
 ---
 
