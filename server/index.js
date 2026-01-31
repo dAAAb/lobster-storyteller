@@ -259,6 +259,41 @@ function getTypeEmoji(type) {
   }
 }
 
+// Auto-detect if request is from an AI agent
+function detectPlayerType(req, manualType) {
+  // 1. Check custom header (AI agents can self-identify)
+  const agentHeader = req.headers['x-player-type'] || req.headers['x-agent-type'];
+  if (agentHeader === 'lobster' || agentHeader === 'ai') {
+    return 'lobster';
+  }
+  
+  // 2. Check User-Agent for common AI/bot patterns
+  const ua = (req.headers['user-agent'] || '').toLowerCase();
+  const aiPatterns = [
+    'claude', 'anthropic', 'openai', 'gpt', 'chatgpt',
+    'moltbook', 'clawdbot', 'langchain', 'autogpt',
+    'curl', 'httpie', 'python-requests', 'axios', 'node-fetch',
+    'headless', 'puppeteer', 'playwright', 'selenium'
+  ];
+  
+  if (aiPatterns.some(pattern => ua.includes(pattern))) {
+    return 'lobster';
+  }
+  
+  // 3. Check if request has typical browser headers (humans usually have these)
+  const hasReferer = !!req.headers['referer'];
+  const hasAcceptLanguage = !!req.headers['accept-language'];
+  const hasCookie = !!req.headers['cookie'];
+  
+  // If missing typical browser headers, might be AI
+  if (!hasReferer && !hasAcceptLanguage && !hasCookie && !ua.includes('mozilla')) {
+    return 'lobster';
+  }
+  
+  // 4. Fall back to manual selection or default to human
+  return manualType || 'human';
+}
+
 // Create room
 app.post('/api/room/create', (req, res) => {
   const { playerName, playerType } = req.body;
@@ -267,13 +302,16 @@ app.post('/api/room/create', (req, res) => {
   const roomCode = generateRoomCode();
   const playerId = generatePlayerId();
   const deck = getCardDeck();
-  const typeEmoji = getTypeEmoji(playerType);
+  const detectedType = detectPlayerType(req, playerType);
+  const typeEmoji = getTypeEmoji(detectedType);
+  
+  console.log(`[${roomCode}] 新房間 - ${playerName} (${detectedType}) UA: ${req.headers['user-agent']?.substring(0, 50)}...`);
 
   const player = {
     id: playerId,
     name: playerName,
     displayName: `${playerName}(${typeEmoji})`,
-    type: playerType || 'human',
+    type: detectedType,
     hand: deck.splice(0, 6),
     score: 0,
     lastSeen: Date.now()
@@ -301,7 +339,8 @@ app.post('/api/room/create', (req, res) => {
     success: true,
     roomCode,
     playerId,
-    player: { id: playerId, name: playerName, hand: player.hand, score: 0 },
+    player: { id: playerId, name: playerName, displayName: player.displayName, type: detectedType, hand: player.hand, score: 0 },
+    detectedType,
     isHost: true
   });
 });
@@ -318,16 +357,19 @@ app.post('/api/room/join', (req, res) => {
   if (room.players.length >= 8) return res.status(400).json({ error: '房間已滿' });
 
   const playerId = generatePlayerId();
-  const typeEmoji = getTypeEmoji(playerType);
+  const detectedType = detectPlayerType(req, playerType);
+  const typeEmoji = getTypeEmoji(detectedType);
   const player = {
     id: playerId,
     name: playerName,
     displayName: `${playerName}(${typeEmoji})`,
-    type: playerType || 'human',
+    type: detectedType,
     hand: room.deck.splice(0, 6),
     score: 0,
     lastSeen: Date.now()
   };
+  
+  console.log(`[${roomCode}] ${playerName} (${detectedType}) 加入了房間`);
 
   room.players.push(player);
   room.lastUpdate = Date.now();
@@ -337,7 +379,8 @@ app.post('/api/room/join', (req, res) => {
     success: true,
     roomCode: room.code,
     playerId,
-    player: { id: playerId, name: playerName, hand: player.hand, score: 0 },
+    player: { id: playerId, name: playerName, displayName: player.displayName, type: detectedType, hand: player.hand, score: 0 },
+    detectedType,
     players: room.players.map(p => ({ id: p.id, name: p.displayName || p.name, score: p.score })),
     isHost: false
   });
