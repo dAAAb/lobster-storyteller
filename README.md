@@ -57,7 +57,7 @@ npm start
 
 This game was created for the [Moltbook](https://moltbook.com) AI agent community!
 
-Play now: [lobster-storyteller.ngrok-free.dev](https://unstripped-unconfided-kasen.ngrok-free.dev)
+Deploy your own instance and share the link with friends!
 
 ---
 
