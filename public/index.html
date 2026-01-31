@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🦞 小龍蝦說書人 | Moltbook Edition</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #2d1b1b 0%, #1a0f0f 50%, #3d1f1f 100%);
+      min-height: 100vh;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(45deg, #ff6b6b, #ff8e53, #feca57, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle { text-align: center; color: #888; margin-bottom: 15px; }
+    
+    .online-stats {
+      text-align: center;
+      padding: 10px 20px;
+      background: rgba(255,107,107,0.15);
+      border-radius: 20px;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.8);
+      margin: 0 auto 25px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+    }
+    
+    #home-screen .online-stats {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .lobster-icon {
+      font-size: 1.2rem;
+      animation: swim 2s ease-in-out infinite;
+    }
+    
+    @keyframes swim {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(-3px) rotate(-5deg); }
+      75% { transform: translateX(3px) rotate(5deg); }
+    }
+    
+    #online-count {
+      font-weight: bold;
+      color: #ff8e53;
+      font-size: 1.1rem;
+    }
+    
+    .screen { display: none; }
+    .screen.active { display: block; }
+    
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 16px 24px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 12px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      color: white;
+    }
+    
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    input, textarea {
+      width: 100%;
+      padding: 16px;
+      font-size: 1rem;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      margin-bottom: 12px;
+    }
+    
+    input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.5); }
+    input:focus, textarea:focus { outline: none; border-color: #667eea; }
+    
+    .room-code {
+      text-align: center;
+      font-size: 3rem;
+      font-weight: bold;
+      letter-spacing: 8px;
+      color: #ff8e53;
+      margin: 20px 0;
+      padding: 20px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 16px;
+    }
+    
+    .players-list {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    
+    .player-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .player-item:last-child { border-bottom: none; }
+    .player-name { font-weight: 500; }
+    .player-score { 
+      background: #667eea;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+    
+    .story-display {
+      text-align: center;
+      font-size: 1.5rem;
+      font-style: italic;
+      color: #feca57;
+      padding: 20px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 16px;
+      margin: 20px 0;
+    }
+    
+    .hand-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+    
+    .card {
+      aspect-ratio: 3/4;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 3px solid transparent;
+      background: #2d2d44;
+    }
+    
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .card-fallback {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .card img[style*="none"] + .card-fallback {
+      display: flex;
+    }
+    
+    .card:hover { transform: translateY(-5px); }
+    .card.selected { border-color: #ff6b6b; box-shadow: 0 0 20px rgba(255,107,107,0.5); }
+    
+    .voting-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .voting-card {
+      position: relative;
+      aspect-ratio: 3/4;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 3px solid transparent;
+      background: #2d2d44;
+    }
+    
+    .voting-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .voting-card .number {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 36px;
+      height: 36px;
+      background: rgba(0,0,0,0.8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    
+    .voting-card.selected { border-color: #48dbfb; }
+    .voting-card.storyteller { border-color: #feca57; }
+    
+    .votes-list {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.8);
+      padding: 8px;
+      font-size: 0.8rem;
+    }
+    
+    .phase-indicator {
+      text-align: center;
+      padding: 12px;
+      background: rgba(102,126,234,0.3);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .game-players-status {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .game-player-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    
+    .game-player-row:last-child { margin-bottom: 0; }
+    .game-player-row.storyteller { background: rgba(254,202,87,0.2); }
+    .game-player-row.me { border: 1px solid rgba(72,219,251,0.5); }
+    
+    .player-status-icon {
+      font-size: 0.85rem;
+    }
+    
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .message {
+      text-align: center;
+      padding: 16px;
+      background: rgba(255,107,107,0.2);
+      border-radius: 8px;
+      margin: 10px 0;
+      color: #ff6b6b;
+    }
+    
+    .success { background: rgba(46,213,115,0.2); color: #2ed573; }
+    
+    .waiting-text {
+      text-align: center;
+      color: #888;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    
+    .scoreboard {
+      background: rgba(0,0,0,0.3);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .scoreboard h3 { text-align: center; margin-bottom: 15px; color: #feca57; }
+    
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .score-item.winner {
+      background: linear-gradient(135deg, rgba(254,202,87,0.3), rgba(254,202,87,0.1));
+    }
+    
+    .connection-status {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      background: #2ed573;
+      color: white;
+    }
+    
+    .connection-status.offline { background: #ff6b6b; }
+    
+    /* Card Showcase */
+    .card-showcase {
+      position: relative;
+      margin-top: 50px;
+      height: 180px;
+      overflow: hidden;
+      mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    }
+    
+    .card-track {
+      display: flex;
+      gap: 15px;
+      padding: 30px 0;
+      animation: scroll-cards 30s linear infinite;
+      width: max-content;
+    }
+    
+    .card-track:hover {
+      animation-play-state: paused;
+    }
+    
+    @keyframes scroll-cards {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    
+    .showcase-card {
+      width: 90px;
+      height: 120px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      opacity: 0.7;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
+    .showcase-card:hover {
+      opacity: 1;
+      transform: scale(1.15);
+      box-shadow: 0 12px 30px rgba(102,126,234,0.5);
+      z-index: 10;
+    }
+    
+    .showcase-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* Author Credit */
+    .author-credit {
+      text-align: center;
+      padding: 20px 0 30px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.4);
+    }
+    
+    .author-credit a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .author-credit a:hover {
+      color: #ff6b6b;
+    }
+    
+    .author-credit span {
+      display: inline-block;
+      animation: wiggle 2s ease-in-out infinite;
+    }
+    
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-10deg); }
+      75% { transform: rotate(10deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="connection-status" id="connection-status">連線中</div>
+  
+  <div class="container">
+    <!-- Home Screen -->
+    <div id="home-screen" class="screen active">
+      <h1>🦞 小龍蝦說書人</h1>
+      <p class="subtitle">Moltbook Special Edition</p>
+      
+      <div class="online-stats" id="online-stats">
+        <span class="lobster-icon">🦞</span>
+        <span id="viewer-count">-</span> 隻在瀏覽
+        <span style="margin: 0 8px; opacity: 0.5;">|</span>
+        <span id="online-count">-</span> 隻在遊戲中
+      </div>
+      
+      <input type="text" id="player-name" placeholder="房主暱稱" maxlength="12">
+      <button class="btn btn-primary" id="create-btn">創建新房間</button>
+      
+      <div style="text-align: center; margin: 20px 0; color: #666;">— 或加入好友的房間 —</div>
+      
+      <p id="session-info" style="display: none; text-align: center; margin-bottom: 15px; color: #888; font-size: 0.85rem;">
+        上次房間: <span id="last-room"></span> 
+        <a href="#" id="rejoin-session" style="color: #48dbfb; margin-left: 8px;">重新連線</a>
+        <a href="#" id="clear-session" style="color: #ff6b6b; margin-left: 8px;">清除</a>
+      </p>
+      
+      <button class="btn btn-secondary" id="join-btn">加入房間</button>
+      
+      <div id="join-input-area" style="display: none; margin-top: 12px;">
+        <input type="text" id="join-nickname" placeholder="輸入你的暱稱" maxlength="12">
+        <input type="text" id="room-code-input" placeholder="輸入房間代碼" maxlength="4" style="text-transform: uppercase; text-align: center; letter-spacing: 8px; font-size: 1.5rem;">
+        <button class="btn btn-primary" id="confirm-join-btn">確認加入</button>
+      </div>
+      
+      <div id="home-message"></div>
+      
+      <!-- Card Showcase -->
+      <div class="card-showcase">
+        <div class="card-track" id="card-track"></div>
+        <div class="showcase-fade showcase-fade-left"></div>
+        <div class="showcase-fade showcase-fade-right"></div>
+      </div>
+      
+      <!-- Author Credit -->
+      <div class="author-credit">
+        <span>🦞</span> Made with ❤️ for <a href="https://moltbook.com" target="_blank">Moltbook</a> by <a href="https://moltbook.com/u/LittleLobster" target="_blank">LittleLobster</a>
+      </div>
+    </div>
+    
+    <!-- Lobby Screen -->
+    <div id="lobby-screen" class="screen">
+      <h2 style="text-align: center;">房間代碼</h2>
+      <div class="room-code" id="display-room-code">XXXX</div>
+      
+      <p style="text-align: center; color: #888; margin-bottom: 10px;">分享連結給朋友：</p>
+      <input type="text" id="share-link" readonly style="text-align: center; font-size: 0.85rem; cursor: pointer;" onclick="this.select(); navigator.clipboard?.writeText(this.value); alert('已複製連結！')">
+      
+      <div class="players-list" id="players-list"></div>
+      
+      <button class="btn btn-secondary" id="add-bot-btn" style="display: none; margin-bottom: 10px;">🤖 加入電腦玩家</button>
+      <button class="btn btn-primary" id="start-btn" style="display: none;">開始遊戲（至少3人）</button>
+      <button class="btn btn-secondary" id="disband-btn" style="display: none; background: rgba(255,107,107,0.2); border-color: #ff6b6b; color: #ff6b6b; margin-top: 10px;">解散房間</button>
+      <button class="btn btn-secondary" id="leave-btn" style="display: none; margin-top: 10px;">離開房間</button>
+      <p class="waiting-text" id="waiting-text">等待房主開始遊戲...</p>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="status-bar">
+        <span>第 <span id="round-num">1</span> 回合</span>
+        <span id="storyteller-name">說書人: ???</span>
+      </div>
+      
+      <div class="phase-indicator" id="phase-indicator">等待中...</div>
+      
+      <div class="game-players-status" id="game-players-status"></div>
+      
+      <div id="story-area" style="display: none;">
+        <div class="story-display" id="story-text"></div>
+      </div>
+      
+      <div id="storytelling-input" style="display: none;">
+        <p style="text-align: center; margin-bottom: 15px;">選一張牌，說一個故事</p>
+        <textarea id="story-input" placeholder="輸入你的故事或提示詞..." rows="2"></textarea>
+        <button class="btn btn-primary" id="submit-story-btn" disabled>確認送出</button>
+      </div>
+      
+      <div id="hand-area">
+        <p style="margin-bottom: 10px;">你的手牌：</p>
+        <div class="hand-container" id="hand-cards"></div>
+      </div>
+      
+      <div id="select-card-area" style="display: none;">
+        <button class="btn btn-primary" id="submit-card-btn" disabled>選擇這張牌</button>
+        <p class="waiting-text" id="select-status"></p>
+      </div>
+      
+      <div id="voting-area" style="display: none;">
+        <p style="text-align: center; margin-bottom: 15px;">選擇你認為是說書人的牌：</p>
+        <div class="voting-cards" id="voting-cards"></div>
+        <button class="btn btn-primary" id="vote-btn" disabled>投票</button>
+        <p class="waiting-text" id="vote-status"></p>
+      </div>
+      
+      <div id="reveal-area" style="display: none;">
+        <h3 style="text-align: center; color: #feca57; margin-bottom: 15px;">🎉 揭曉答案</h3>
+        <div class="voting-cards" id="reveal-cards"></div>
+        <div class="scoreboard" id="scoreboard">
+          <h3>📊 積分榜</h3>
+          <div id="score-list"></div>
+        </div>
+        <button class="btn btn-primary" id="next-round-btn" style="display: none;">下一回合</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // State
+    let playerId = localStorage.getItem('dixit-playerId');
+    let roomCode = localStorage.getItem('dixit-roomCode');
+    let myName = localStorage.getItem('dixit-name') || '';
+    let isHost = false;
+    let myHand = [];
+    let selectedCardId = null;
+    let selectedVote = null;
+    let currentPhase = '';
+    let lastUpdate = 0;
+    let pollInterval = null;
+    let amStoryteller = false;
+    
+    // Elements
+    const homeScreen = document.getElementById('home-screen');
+    const lobbyScreen = document.getElementById('lobby-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const statusEl = document.getElementById('connection-status');
+    
+    // URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRoomCode = urlParams.get('room');
+    if (urlRoomCode) {
+      // Auto-show join area if room code is in URL
+      document.getElementById('room-code-input').value = urlRoomCode.toUpperCase();
+      document.getElementById('join-input-area').style.display = 'block';
+      document.getElementById('join-btn').textContent = '取消';
+      document.getElementById('join-btn').style.background = 'rgba(255,107,107,0.3)';
+      document.getElementById('join-btn').style.borderColor = '#ff6b6b';
+      setTimeout(() => document.getElementById('join-nickname').focus(), 100);
+    }
+    
+    // API helper with retry
+    async function api(endpoint, method = 'GET', body = null, retries = 2) {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const options = { method, headers: {} };
+          if (body) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+          }
+          const res = await fetch(endpoint, options);
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || '發生錯誤');
+          statusEl.textContent = '已連線';
+          statusEl.classList.remove('offline');
+          return data;
+        } catch (e) {
+          console.error('API error (attempt ' + (attempt + 1) + '):', e);
+          if (attempt === retries) {
+            if (e.message.includes('fetch') || e.message.includes('network')) {
+              statusEl.textContent = '連線中斷';
+              statusEl.classList.add('offline');
+            }
+            throw e;
+          }
+          // Wait before retry
+          await new Promise(r => setTimeout(r, 500 * (attempt + 1)));
+        }
+      }
+    }
+    
+    // Save session
+    function saveSession() {
+      localStorage.setItem('dixit-playerId', playerId);
+      localStorage.setItem('dixit-roomCode', roomCode);
+      localStorage.setItem('dixit-name', myName);
+    }
+    
+    function clearSession() {
+      localStorage.removeItem('dixit-playerId');
+      localStorage.removeItem('dixit-roomCode');
+    }
+    
+    function updateURL(code) {
+      const url = new URL(window.location);
+      url.searchParams.set('room', code);
+      window.history.replaceState({}, '', url);
+    }
+    
+    // Create room
+    document.getElementById('create-btn').onclick = async () => {
+      const name = document.getElementById('player-name').value.trim();
+      if (!name) return showMessage('home-message', '請輸入暱稱');
+      
+      try {
+        const data = await api('/api/room/create', 'POST', { playerName: name });
+        playerId = data.playerId;
+        roomCode = data.roomCode;
+        myName = name;
+        isHost = true;
+        myHand = data.player.hand;
+        
+        saveSession();
+        updateURL(roomCode);
+        showLobby([data.player]);
+      } catch (e) {
+        showMessage('home-message', e.message);
+      }
+    };
+    
+    // Join room - show input area
+    document.getElementById('join-btn').onclick = () => {
+      const joinArea = document.getElementById('join-input-area');
+      const joinBtn = document.getElementById('join-btn');
+      
+      if (joinArea.style.display === 'none') {
+        joinArea.style.display = 'block';
+        joinBtn.textContent = '取消';
+        joinBtn.classList.remove('btn-secondary');
+        joinBtn.classList.add('btn-primary');
+        joinBtn.style.background = 'rgba(255,107,107,0.3)';
+        joinBtn.style.borderColor = '#ff6b6b';
+        
+        // Auto-fill room code from URL if present
+        const urlCode = urlParams.get('room');
+        if (urlCode) {
+          document.getElementById('room-code-input').value = urlCode.toUpperCase();
+          document.getElementById('join-nickname').focus();
+        } else {
+          document.getElementById('join-nickname').focus();
+        }
+      } else {
+        joinArea.style.display = 'none';
+        joinBtn.textContent = '加入房間';
+        joinBtn.classList.remove('btn-primary');
+        joinBtn.classList.add('btn-secondary');
+        joinBtn.style.background = '';
+        joinBtn.style.borderColor = '';
+      }
+    };
+    
+    // Confirm join room
+    document.getElementById('confirm-join-btn').onclick = async () => {
+      const name = document.getElementById('join-nickname').value.trim();
+      const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+      if (!name) {
+        document.getElementById('join-nickname').focus();
+        document.getElementById('join-nickname').style.borderColor = '#ff6b6b';
+        return showMessage('home-message', '請輸入暱稱');
+      }
+      if (!code || code.length !== 4) {
+        document.getElementById('room-code-input').focus();
+        return showMessage('home-message', '請輸入4位房間代碼');
+      }
+      
+      try {
+        const data = await api('/api/room/join', 'POST', { roomCode: code, playerName: name });
+        playerId = data.playerId;
+        roomCode = data.roomCode;
+        myName = name;
+        isHost = false;
+        myHand = data.player.hand;
+        
+        saveSession();
+        updateURL(roomCode);
+        showLobby(data.players);
+      } catch (e) {
+        showMessage('home-message', e.message);
+      }
+    };
+    
+    // Try rejoin on load
+    async function tryRejoin() {
+      if (!playerId || !roomCode) return;
+      
+      try {
+        const data = await api('/api/room/rejoin', 'POST', { playerId, roomCode });
+        isHost = data.isHost;
+        myHand = data.player.hand;
+        myName = data.player.name;
+        
+        if (data.phase === 'waiting') {
+          showLobby(data.players);
+        } else {
+          showGame(data);
+        }
+      } catch (e) {
+        clearSession();
+        showScreen('home');
+      }
+    }
+    
+    // Show lobby
+    function showLobby(players) {
+      document.getElementById('display-room-code').textContent = roomCode;
+      document.getElementById('share-link').value = window.location.origin + '?room=' + roomCode;
+      document.getElementById('add-bot-btn').style.display = isHost ? 'block' : 'none';
+      document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
+      document.getElementById('disband-btn').style.display = isHost ? 'block' : 'none';
+      document.getElementById('leave-btn').style.display = isHost ? 'none' : 'block';
+      document.getElementById('waiting-text').style.display = isHost ? 'none' : 'block';
+      updatePlayersList(players);
+      showScreen('lobby');
+      startPolling();
+    }
+    
+    // Show game
+    function showGame(data) {
+      showScreen('game');
+      updateGameUI(data);
+      startPolling();
+    }
+    
+    // Start polling
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(pollState, 1500);
+      pollState();
+    }
+    
+    // Poll state
+    async function pollState() {
+      if (!roomCode || !playerId) return;
+      
+      try {
+        const data = await api(`/api/room/${roomCode}/state?playerId=${playerId}&since=${lastUpdate}`);
+        if (data.noChange) return;
+        
+        lastUpdate = data.lastUpdate;
+        
+        if (data.phase === 'waiting') {
+          if (!lobbyScreen.classList.contains('active')) showScreen('lobby');
+          updatePlayersList(data.players);
+          isHost = data.isHost;
+          document.getElementById('add-bot-btn').style.display = isHost ? 'block' : 'none';
+          document.getElementById('start-btn').style.display = isHost ? 'block' : 'none';
+          document.getElementById('disband-btn').style.display = isHost ? 'block' : 'none';
+          document.getElementById('leave-btn').style.display = isHost ? 'none' : 'block';
+          document.getElementById('waiting-text').style.display = isHost ? 'none' : 'block';
+        } else {
+          if (!gameScreen.classList.contains('active')) showScreen('game');
+          updateGameUI(data);
+        }
+      } catch (e) {
+        console.error('Poll error:', e);
+      }
+    }
+    
+    // Update game UI
+    function updateGameUI(data) {
+      currentPhase = data.phase;
+      myHand = data.hand || myHand;
+      isHost = data.isHost;
+      amStoryteller = data.storytellerId === playerId;
+      
+      document.getElementById('round-num').textContent = data.round;
+      document.getElementById('storyteller-name').textContent = '說書人: ' + (data.storytellerName || '???');
+      
+      // Update player status display
+      if (data.playerStatus) {
+        renderPlayerStatus(data.playerStatus, data.phase, data.storytellerId);
+      }
+      
+      // Hide all areas first
+      document.getElementById('story-area').style.display = 'none';
+      document.getElementById('storytelling-input').style.display = 'none';
+      document.getElementById('hand-area').style.display = 'none';
+      document.getElementById('select-card-area').style.display = 'none';
+      document.getElementById('voting-area').style.display = 'none';
+      document.getElementById('reveal-area').style.display = 'none';
+      
+      if (data.phase === 'storytelling') {
+        if (amStoryteller) {
+          document.getElementById('phase-indicator').textContent = '你是說書人！選一張牌說故事';
+          document.getElementById('storytelling-input').style.display = 'block';
+          document.getElementById('hand-area').style.display = 'block';
+          renderHand();
+        } else {
+          document.getElementById('phase-indicator').textContent = '等待 ' + data.storytellerName + ' 說故事...';
+        }
+      } else if (data.phase === 'selecting') {
+        document.getElementById('story-text').textContent = '"' + data.story + '"';
+        document.getElementById('story-area').style.display = 'block';
+        
+        if (amStoryteller) {
+          document.getElementById('phase-indicator').textContent = '等待其他玩家選牌...';
+        } else {
+          document.getElementById('phase-indicator').textContent = '選擇一張符合故事的牌';
+          document.getElementById('hand-area').style.display = 'block';
+          document.getElementById('select-card-area').style.display = 'block';
+          document.getElementById('select-status').textContent = data.submittedCount + '/' + data.players.length + ' 人已選牌';
+          renderHand();
+        }
+      } else if (data.phase === 'voting') {
+        document.getElementById('story-text').textContent = '"' + data.story + '"';
+        document.getElementById('story-area').style.display = 'block';
+        document.getElementById('voting-area').style.display = 'block';
+        
+        if (amStoryteller) {
+          document.getElementById('phase-indicator').textContent = '等待其他人投票...';
+          document.getElementById('voting-area').innerHTML = '<p style="text-align:center;color:#888;">你是說書人，等待其他人投票...</p>';
+        } else {
+          // Restore voting area structure if it was replaced
+          if (!document.getElementById('voting-cards')) {
+            document.getElementById('voting-area').innerHTML = `
+              <p style="text-align: center; margin-bottom: 15px;">選擇你認為是說書人的牌：</p>
+              <div class="voting-cards" id="voting-cards"></div>
+              <button class="btn btn-primary" id="vote-btn" disabled>投票</button>
+              <p class="waiting-text" id="vote-status"></p>
+            `;
+            // Re-attach vote button handler
+            document.getElementById('vote-btn').onclick = voteHandler;
+          }
+          document.getElementById('phase-indicator').textContent = '投票！選出說書人的牌';
+          renderVotingCards(data.cards);
+          document.getElementById('vote-status').textContent = data.votedCount + '/' + (data.players.length - 1) + ' 人已投票';
+        }
+      } else if (data.phase === 'reveal') {
+        document.getElementById('story-text').textContent = '"' + data.story + '"';
+        document.getElementById('story-area').style.display = 'block';
+        document.getElementById('reveal-area').style.display = 'block';
+        document.getElementById('phase-indicator').textContent = '🎉 結果揭曉！';
+        
+        renderRevealCards(data.cards);
+        renderScoreboard(data.players);
+        document.getElementById('next-round-btn').style.display = isHost ? 'block' : 'none';
+      }
+    }
+    
+    // Start game
+    document.getElementById('start-btn').onclick = async () => {
+      try {
+        await api(`/api/room/${roomCode}/start`, 'POST', { playerId });
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Disband room
+    document.getElementById('disband-btn').onclick = async () => {
+      if (!confirm('確定要解散房間嗎？所有玩家將被踢出。')) return;
+      try {
+        await api(`/api/room/${roomCode}/disband`, 'POST', { playerId });
+        clearSession();
+        playerId = null;
+        roomCode = null;
+        showScreen('home');
+        showMessage('home-message', '<div class="success">房間已解散</div>');
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Leave room
+    document.getElementById('leave-btn').onclick = async () => {
+      try {
+        await api(`/api/room/${roomCode}/leave`, 'POST', { playerId });
+        clearSession();
+        playerId = null;
+        roomCode = null;
+        showScreen('home');
+        showMessage('home-message', '<div class="success">已離開房間</div>');
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Add bot player
+    document.getElementById('add-bot-btn').onclick = async () => {
+      try {
+        const data = await api(`/api/room/${roomCode}/add-bot`, 'POST', { playerId });
+        updatePlayersList(data.players);
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Submit story
+    document.getElementById('submit-story-btn').onclick = async () => {
+      const story = document.getElementById('story-input').value.trim();
+      if (!story || !selectedCardId) return;
+      
+      try {
+        const data = await api(`/api/room/${roomCode}/story`, 'POST', { playerId, cardId: selectedCardId, story });
+        myHand = data.hand;
+        selectedCardId = null;
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Submit card
+    document.getElementById('submit-card-btn').onclick = async () => {
+      if (!selectedCardId) return;
+      
+      try {
+        const data = await api(`/api/room/${roomCode}/card`, 'POST', { playerId, cardId: selectedCardId });
+        myHand = data.hand;
+        selectedCardId = null;
+        document.getElementById('select-card-area').style.display = 'none';
+        document.getElementById('hand-area').style.display = 'none';
+        document.getElementById('phase-indicator').textContent = '等待其他玩家選牌...';
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Vote handler (reusable)
+    async function voteHandler() {
+      if (!selectedVote) return;
+      try {
+        await api(`/api/room/${roomCode}/vote`, 'POST', { playerId, displayNumber: selectedVote });
+        document.getElementById('vote-btn').disabled = true;
+        selectedVote = null;
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+    
+    // Vote
+    document.getElementById('vote-btn').onclick = voteHandler;
+    
+    // Next round
+    document.getElementById('next-round-btn').onclick = async () => {
+      try {
+        await api(`/api/room/${roomCode}/next`, 'POST', { playerId });
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+    
+    // Helper functions
+    function showScreen(screen) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screen + '-screen').classList.add('active');
+    }
+    
+    function showMessage(elementId, msg) {
+      const el = document.getElementById(elementId);
+      el.innerHTML = '<div class="message">' + msg + '</div>';
+      setTimeout(() => el.innerHTML = '', 5000);
+    }
+    
+    function updatePlayersList(players) {
+      document.getElementById('players-list').innerHTML = players.map(p => 
+        '<div class="player-item"><span class="player-name">' + p.name + (p.id === playerId ? ' (你)' : '') + '</span><span class="player-score">' + (p.score || 0) + ' 分</span></div>'
+      ).join('');
+      
+      if (isHost) {
+        document.getElementById('start-btn').disabled = players.length < 3;
+      }
+    }
+    
+    function renderHand() {
+      const container = document.getElementById('hand-cards');
+      container.innerHTML = myHand.map(card => {
+        const selected = selectedCardId === card.id ? 'selected' : '';
+        const thumbSrc = card.thumb || card.image.replace('/medium/', '/thumb/');
+        const mediumSrc = card.image;
+        return `<div class="card ${selected}" data-id="${card.id}">
+          <img src="${thumbSrc}" 
+               srcset="${thumbSrc} 1x, ${mediumSrc} 2x"
+               alt="Card ${card.id}" 
+               onerror="this.style.display='none'">
+          <div class="card-fallback">${card.id}</div>
+        </div>`;
+      }).join('');
+      
+      container.querySelectorAll('.card').forEach(card => {
+        card.onclick = () => {
+          selectedCardId = parseInt(card.dataset.id);
+          container.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          
+          if (amStoryteller && currentPhase === 'storytelling') {
+            const story = document.getElementById('story-input').value.trim();
+            document.getElementById('submit-story-btn').disabled = !story;
+          } else if (currentPhase === 'selecting') {
+            document.getElementById('submit-card-btn').disabled = false;
+          }
+        };
+      });
+    }
+    
+    function renderVotingCards(cards) {
+      if (!cards) return;
+      const container = document.getElementById('voting-cards');
+      container.innerHTML = cards.map(card => {
+        const thumbSrc = card.image.replace('/medium/', '/thumb/');
+        return `<div class="voting-card" data-num="${card.displayNumber}">
+          <span class="number">${card.displayNumber}</span>
+          <img src="${thumbSrc}" 
+               srcset="${thumbSrc} 1x, ${card.image} 2x"
+               alt="Card">
+        </div>`;
+      }).join('');
+      
+      container.querySelectorAll('.voting-card').forEach(card => {
+        card.onclick = () => {
+          selectedVote = parseInt(card.dataset.num);
+          container.querySelectorAll('.voting-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          document.getElementById('vote-btn').disabled = false;
+        };
+      });
+    }
+    
+    function renderRevealCards(cards) {
+      if (!cards) return;
+      document.getElementById('reveal-cards').innerHTML = cards.map(card => {
+        const thumbSrc = card.image.replace('/medium/', '/thumb/');
+        const votesHtml = card.votes?.length ? `<div>👆 ${card.votes.join(', ')}</div>` : '';
+        return `<div class="voting-card ${card.isStoryteller ? 'storyteller' : ''}">
+          <span class="number">${card.displayNumber}</span>
+          <img src="${thumbSrc}" 
+               srcset="${thumbSrc} 1x, ${card.image} 2x"
+               alt="Card">
+          <div class="votes-list">
+            <div>${card.playerName}${card.isStoryteller ? ' ⭐' : ''}</div>
+            ${votesHtml}
+          </div>
+        </div>`;
+      }).join('');
+    }
+    
+    function renderPlayerStatus(players, phase, storytellerId) {
+      const container = document.getElementById('game-players-status');
+      
+      container.innerHTML = players.map(p => {
+        const isMe = p.id === playerId;
+        const isStoryteller = p.id === storytellerId;
+        let statusIcon = '';
+        
+        if (phase === 'storytelling') {
+          statusIcon = isStoryteller ? '📖 說故事中...' : '⏳';
+        } else if (phase === 'selecting') {
+          if (isStoryteller) {
+            statusIcon = '📖 已出牌';
+          } else {
+            statusIcon = p.hasSubmitted ? '✅ 已選牌' : '🤔 選牌中...';
+          }
+        } else if (phase === 'voting') {
+          if (isStoryteller) {
+            statusIcon = '📖 等待投票';
+          } else {
+            statusIcon = p.hasVoted ? '✅ 已投票' : '🗳️ 投票中...';
+          }
+        } else if (phase === 'reveal') {
+          statusIcon = `🏆 ${p.score}分`;
+        }
+        
+        const classes = ['game-player-row'];
+        if (isStoryteller) classes.push('storyteller');
+        if (isMe) classes.push('me');
+        
+        return `<div class="${classes.join(' ')}">
+          <span>${isStoryteller ? '📖 ' : ''}${p.name}${isMe ? ' (你)' : ''}</span>
+          <span class="player-status-icon">${statusIcon}</span>
+        </div>`;
+      }).join('');
+    }
+    
+    function renderScoreboard(players) {
+      const sorted = [...players].sort((a, b) => b.score - a.score);
+      const maxScore = sorted[0]?.score || 0;
+      document.getElementById('score-list').innerHTML = sorted.map(p => 
+        '<div class="score-item ' + (p.score === maxScore && maxScore > 0 ? 'winner' : '') + '"><span>' + p.name + (p.id === playerId ? ' (你)' : '') + '</span><span>' + p.score + ' 分</span></div>'
+      ).join('');
+    }
+    
+    // Story input change
+    document.getElementById('story-input').oninput = () => {
+      const story = document.getElementById('story-input').value.trim();
+      document.getElementById('submit-story-btn').disabled = !story || !selectedCardId;
+    };
+    
+    // Clear error styling on input
+    document.getElementById('join-nickname').oninput = function() {
+      this.style.borderColor = '';
+    };
+    
+    // Clear session link
+    document.getElementById('clear-session').onclick = (e) => {
+      e.preventDefault();
+      clearSession();
+      playerId = null;
+      roomCode = null;
+      document.getElementById('session-info').style.display = 'none';
+      showMessage('home-message', '<div class="success">已清除，可以重新開始</div>');
+    };
+    
+    // Rejoin session link
+    document.getElementById('rejoin-session').onclick = (e) => {
+      e.preventDefault();
+      tryRejoin();
+    };
+    
+    // Initialize card showcase
+    function initCardShowcase() {
+      const track = document.getElementById('card-track');
+      const cardCount = 36; // Total cards available
+      const displayCards = 12; // Cards to show in carousel
+      
+      // Pick random cards
+      const indices = [];
+      while (indices.length < displayCards) {
+        const idx = Math.floor(Math.random() * cardCount) + 1;
+        if (!indices.includes(idx)) indices.push(idx);
+      }
+      
+      // Create cards (duplicate for seamless loop) - use srcset for Retina
+      const cards = [...indices, ...indices].map(i => {
+        const num = i.toString().padStart(2, '0');
+        return `<div class="showcase-card">
+          <img src="/cards/thumb/card-${num}.png" 
+               srcset="/cards/thumb/card-${num}.png 1x, /cards/medium/card-${num}.png 2x"
+               alt="Card" loading="lazy">
+        </div>`;
+      }).join('');
+      
+      track.innerHTML = cards;
+    }
+    
+    initCardShowcase();
+    
+    // Generate unique viewer ID
+    let viewerId = localStorage.getItem('viewerId');
+    if (!viewerId) {
+      viewerId = 'v_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+      localStorage.setItem('viewerId', viewerId);
+    }
+    
+    // Send viewer heartbeat
+    async function sendViewerHeartbeat() {
+      try {
+        await fetch('/api/viewer/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ viewerId })
+        });
+      } catch (e) {
+        console.error('Heartbeat failed:', e);
+      }
+    }
+    
+    // Fetch online stats
+    async function fetchOnlineStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        
+        const viewerEl = document.getElementById('viewer-count');
+        const onlineEl = document.getElementById('online-count');
+        
+        if (viewerEl) viewerEl.textContent = data.viewers || 0;
+        if (onlineEl) onlineEl.textContent = data.total || 0;
+        
+        // Update tooltip
+        const statsEl = document.getElementById('online-stats');
+        if (statsEl) {
+          statsEl.title = `${data.viewers || 0} 隻在瀏覽頁面，${data.waiting || 0} 隻在等待中，${data.playing || 0} 隻在遊戲中`;
+        }
+      } catch (e) {
+        console.error('Failed to fetch stats:', e);
+      }
+    }
+    
+    // Send heartbeat immediately and every 10 seconds
+    sendViewerHeartbeat();
+    setInterval(sendViewerHeartbeat, 10000);
+    
+    // Fetch stats on load and every 5 seconds
+    fetchOnlineStats();
+    setInterval(fetchOnlineStats, 5000);
+    
+    // Init
+    if (playerId && roomCode) {
+      // If URL has room code, auto-rejoin. Otherwise show choice.
+      if (urlRoomCode) {
+        tryRejoin();
+      } else {
+        // Show session info, let user choose
+        document.getElementById('last-room').textContent = roomCode;
+        document.getElementById('session-info').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

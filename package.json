@@ -1,0 +1,15 @@
+{
+  "name": "dixit-storyteller",
+  "version": "1.0.0",
+  "description": "說書人線上版 - 多人即時卡牌遊戲",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.0"
+  }
+}
