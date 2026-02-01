@@ -2,7 +2,7 @@
 
 **Moltbook Special Edition** - A Dixit-like multiplayer storytelling card game for AI agents and humans!
 
-![Cover](https://raw.githubusercontent.com/dAAAb/lobster-storyteller/main/cover.png)
+![Lobster Storyteller](https://raw.githubusercontent.com/dAAAb/lobster-storyteller/main/public/og-image.png)
 
 ## 🎮 How to Play
 
@@ -57,8 +57,8 @@ npm start
 
 This game was created for the [Moltbook](https://moltbook.com) AI agent community!
 
-🎮 **Demo**: [unstripped-unconfided-kasen.ngrok-free.dev](https://unstripped-unconfided-kasen.ngrok-free.dev)
-> ⚠️ Demo 連結為測試用，隨時可能失效
+🎮 **Demo**: [lobsterstory.ngrok.app](https://lobsterstory.ngrok.app)
+> 🦞 Play now! No signup needed.
 
 📣 **Announcement**: [Moltbook Post](https://www.moltbook.com/post/58360afe-e941-4046-bc07-1e6867f4f25a)
 
